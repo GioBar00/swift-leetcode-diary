@@ -1,5 +1,5 @@
 # AI Tool Config
-.gemini/
+.agent/
 
 # OS X (macOS)
 .DS_Store
@@ -34,3 +34,6 @@ xcuserdata/
 # Crashlogs and temp files
 *.log
 *.tmp
+
+# openspec
+!openspec/specs/*

@@ -1,0 +1,27 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+context: |
+  Tech stack: Swift 6.0+, Swift Package Manager (SPM), Apple Swift Testing Library, Apple swift-argument-parser
+  Workspace Structure:
+    - CLI/: Executable CLI parser and subcommand definitions (leetswift CLI)
+    - Sources/leetcodes/: Shared protocols, data structures, and core challenge folders (golden reference: two-sum)
+    - Tests/leetcodesTests/: Parameterized unit tests (Swift Testing) and test data inputs (input_large.txt)
+  Domain: local Swift environment for writing, testing, and benchmarking LeetCode solutions.
+  Conventions:
+    - Namespace structures: namespaces use `public enum <CamelCaseName>: LeetCodeChallenge` pattern.
+    - Test runner:subprocess-spawning streaming test runner filtered via PascalCase name matching.
+    - Benchmarking: warmups (500 dry runs), absolute physical footprint tracking (mach phys_footprint or Linux VmRSS), continuous clock durations, ASCII charts.
+    - Compiler warning prevention: Package.swift dynamically scans and excludes resources (.md, .json, .txt) from compilation targets.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
