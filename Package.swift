@@ -24,7 +24,7 @@ func discoverExcludes(in subDirectory: String, extensions: [String]) -> [String]
 }
 
 let coreExcludes = discoverExcludes(in: "Sources/leetcodes", extensions: ["md", "json"])
-let testExcludes = discoverExcludes(in: "Tests/leetcodesTests", extensions: ["txt"])
+let testExcludes = discoverExcludes(in: "Tests/leetcodesTests", extensions: ["txt", "json"])
 
 // MARK: - Package Definition
 let package = Package(
