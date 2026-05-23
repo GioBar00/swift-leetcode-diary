@@ -30,16 +30,16 @@ Improvements to the **template itself** (new shared utilities, CLI features, CI 
 
 ---
 
-## ✍️ Commit Message Convention
+## ✍️ PR Title & Commit Conventions
 
-This project uses **[Conventional Commits](https://www.conventionalcommits.org/)** to enable automated changelog generation. All commits must follow this format:
+This project uses **[Conventional Commits](https://www.conventionalcommits.org/)** to enable automated changelog generation. 
+
+To maintain a clean and readable history, we use **Squash and Merge**. When your Pull Request is merged, all your commits will be squashed into a single commit on the target branch. The title of this squash commit is determined by your **Pull Request Title**. 
+
+Therefore, **your Pull Request Title must follow the Conventional Commits format**:
 
 ```
 <type>(<optional scope>): <short description>
-
-[optional body]
-
-[optional footer]
 ```
 
 ### Types
@@ -54,7 +54,7 @@ This project uses **[Conventional Commits](https://www.conventionalcommits.org/)
 | `test` | Adding or fixing tests |
 | `perf` | Performance improvements |
 
-### Examples
+### Examples (PR Titles)
 
 ```
 feat(cli): add --json output flag to benchmark command
@@ -65,18 +65,21 @@ refactor(shared): extract formatDuration to CLIHelpers
 ```
 
 > [!IMPORTANT]
-> Commit messages are enforced by a blocking `commitlint` CI check on all Pull Requests.
-> PRs with non-conforming messages will not be merged until fixed.
+> The Pull Request Title is enforced by a blocking `PR Title Lint` CI check on all PRs.
+> If the lint check fails, simply edit your Pull Request Title on GitHub to conform, and the CI check will re-run and pass.
+> Individual commits on your feature branch do not have to be strictly conventional, but keeping them neat is always appreciated!
 
 ---
 
 ## 🔀 Pull Request Process
 
 1. Fork the repository and create a feature branch: `git checkout -b feat/my-improvement`
-2. Make your changes with properly formatted commit messages
-3. Open a Pull Request against `main`
-4. The CI suite (build, tests, commitlint) must pass
-5. One review approval is sufficient for merge
+2. Make your changes on the feature branch.
+3. Open a Pull Request against `dev`.
+4. Ensure your **Pull Request Title** matches the conventional format.
+5. The CI suite (build, tests, PR Title Lint) must pass.
+6. One review approval is sufficient for merge.
+7. The PR will be **Squashed and Merged** into `dev`.
 
 ---
 
