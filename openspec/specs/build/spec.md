@@ -20,5 +20,5 @@ To keep builds 100% warning-free as developers add challenges, the build configu
 #### Scenario: Dynamically excluding documentation and metrics
 - **WHEN** the package targets are planned and initialized
 - **THEN** the core library target `leetcodes` MUST dynamically scan the `Sources/leetcodes` directory and exclude all `.md` and `.json` files from being compiled
-- **AND** the test target `leetcodesTests` MUST dynamically scan the `Tests/leetcodesTests` directory and exclude all `.txt` resource files from being compiled
+- **AND** the test target `leetcodesTests` MUST dynamically scan the `Tests/leetcodesTests` directory and exclude all `.txt` and `.json` resource files from being compiled
 - **AND** the compilation process SHALL execute successfully with zero warnings regarding unprocessed resources

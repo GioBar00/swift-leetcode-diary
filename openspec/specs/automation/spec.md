@@ -1,15 +1,15 @@
 # Challenge Automation Specification
 
 ## Purpose
-The Challenge Automation module (`create.swift` script) streamlines the process of starting new LeetCode challenges. It validates inputs, generates all required directories, writes standard templated source and test files, and automatically registers the new problem into the core system registry.
+The Challenge Automation module (`leetswift create` command) streamlines the process of starting new LeetCode challenges. It validates inputs, generates all required directories, writes standard templated source and test files, and automatically registers the new problem into the core system registry.
 ## Requirements
 ### Requirement: Alphanumeric Snail-Case Slug Validation
-The automation script MUST strictly validate that the input slug conforms to a snail-case standard containing only lowercase alphanumeric characters and hyphens.
+The automation script MUST validate that the input slug conforms to a snail-case standard containing only lowercase alphanumeric characters and hyphens, after trimming surrounding whitespaces/newlines and lowercasing.
 
 #### Scenario: Validating valid and invalid slugs
-- **WHEN** the script is executed with a valid slug (e.g. `longest-common-prefix`)
+- **WHEN** the script is executed with a valid slug (e.g. `longest-common-prefix`, or `Longest-Common-Prefix` which is automatically normalized and lowercased)
 - **THEN** it MUST accept the argument and proceed with scaffolding
-- **AND** if the slug contains uppercase letters, spaces, or special characters, it MUST throw an error and terminate execution
+- **AND** if the normalized slug contains spaces, underscores, or special characters, it MUST throw an error and terminate execution
 
 ### Requirement: Scaffolded Directory Layout and Templates
 The script MUST generate two dedicated directories (for source files and unit tests) and populate them with standard template files.
