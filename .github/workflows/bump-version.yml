@@ -86,7 +86,7 @@ jobs:
           
           # Commit the updated CHANGELOG.md to dev
           git add CHANGELOG.md
-          git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for $TAG [skip ci]"
+          git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for $TAG [skip]"
           git push origin dev
           
           # Tag the new commit on dev
