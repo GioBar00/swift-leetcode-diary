@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.1.0] - 2026-05-24
+
+### ♻️ Refactors
+
+- Enhanced workflows logic (#8) ([`b0a7f39`](https://github.com/GioBar00/swift-leetcode-diary/commit/b0a7f39e980a7873119e089779ebf3d4c27e599b))
+
+### ✨ Features
+
+- Add openspec support and initial specs ([`c1b457a`](https://github.com/GioBar00/swift-leetcode-diary/commit/c1b457a2be88690dce28b6c2e013611f7243e4d4))
+- Add automated leetcode fetching and smart test templates (#2) ([`88b4a40`](https://github.com/GioBar00/swift-leetcode-diary/commit/88b4a40ad7b9107953be51309a79f13543892014))
+- Integrate automated challenge scaffolding in leetswift ([`e9a31a0`](https://github.com/GioBar00/swift-leetcode-diary/commit/e9a31a020cf19f4a2ae0dbd59c0f470fbcf7f822))
+
+### 👷 CI
+
+- Enforce pull requests to main originate from dev branch (#6) ([`6dbcd7d`](https://github.com/GioBar00/swift-leetcode-diary/commit/6dbcd7ddc6111cb76d4e02664147024767c5004c))
+
+[v1.1.0]: https://github.com/GioBar00/swift-leetcode-diary/releases/tag/v1.1.0
+
+
 ## [v1.0.0] - 2026-05-23
 
 ### ✨ Features
