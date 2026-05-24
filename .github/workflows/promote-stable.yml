@@ -76,6 +76,9 @@ jobs:
         run: |
           STABLE_TAG="${{ steps.check_release.outputs.stable_tag }}"
           
+          # Set remote URL to explicitly use the PAT token
+          git remote set-url origin "https://x-access-token:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
+          
           git add CHANGELOG.md
           git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for $STABLE_TAG [skip ci]"
           git push origin main
@@ -89,6 +92,9 @@ jobs:
         if: steps.check_release.outputs.should_promote == 'true'
         run: |
           echo "🔄 Running automatic back-merge from main to dev..."
+          
+          # Set remote URL to explicitly use the PAT token
+          git remote set-url origin "https://x-access-token:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
           
           # Fetch all branches
           git fetch origin dev
