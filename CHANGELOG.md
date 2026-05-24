@@ -7,17 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.1.0-rc.2] - 2026-05-24
-
-### ♻️ Refactors
-
-- Enhanced workflows logic (#8) ([`b0a7f39`](https://github.com/GioBar00/swift-leetcode-diary/commit/b0a7f39e980a7873119e089779ebf3d4c27e599b))
-
-### 👷 CI
-
-- Enforce pull requests to main originate from dev branch (#6) ([`6dbcd7d`](https://github.com/GioBar00/swift-leetcode-diary/commit/6dbcd7ddc6111cb76d4e02664147024767c5004c))
-
-## [1.0.0] - 2026-05-23
+## [v1.0.0] - 2026-05-23
 
 ### ✨ Features
 - Integrated `leetswift` CLI with `run`, `test`, `benchmark`, and `list` commands
@@ -39,4 +29,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `bump-version` workflow dispatch for one-click semver tagging
 - Tag-triggered release pipeline with `git-cliff` changelog generation
 
-[1.0.0]: https://github.com/GioBar00/swift-leetcode-diary/releases/tag/v1.0.0
+[v1.0.0]: https://github.com/GioBar00/swift-leetcode-diary/releases/tag/v1.0.0

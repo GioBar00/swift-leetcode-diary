@@ -77,8 +77,12 @@ jobs:
           # Set remote URL to explicitly use the PAT token
           git remote set-url origin "https://x-access-token:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
           
-          # Generate and prepend the changelog using git-cliff
-          git-cliff --config .github/cliff.toml --unreleased --tag "$TAG" --prepend CHANGELOG.md
+          # Find the previous stable tag (used as the base for the new changelog section)
+          PREV_STABLE_TAG=$(git tag --sort=-version:refname | grep -v -- '-' | head -n 1)
+          
+          # Replace the unreleased section idempotently using the script
+          STABLE_TAG="${TAG%%-*}"
+          .github/scripts/update-changelog.sh "$STABLE_TAG" "$PREV_STABLE_TAG"
           
           # Commit the updated CHANGELOG.md to dev
           git add CHANGELOG.md

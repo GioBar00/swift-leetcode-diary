@@ -72,18 +72,13 @@ jobs:
           # Fetch origin dev so we have the granular history
           git fetch origin dev
           
-          # Find the previous stable tag by picking the second-most-recent stable tag
+          # Find the previous stable tag (used as the base for the new changelog section)
           # (the most recent stable is the one we're about to promote *to*, so we skip it)
           PREV_STABLE_TAG=$(git tag --sort=-version:refname | grep -v -- '-' | sed -n '1p')
           echo "Previous stable tag: $PREV_STABLE_TAG"
           
-          # Prepend only the new release section on top of the existing CHANGELOG.md
-          git-cliff \
-            --config .github/cliff.toml \
-            --unreleased \
-            --tag "$STABLE_TAG" \
-            --prepend CHANGELOG.md \
-            "$PREV_STABLE_TAG..origin/dev"
+          # Replace the unreleased section idempotently using the script
+          .github/scripts/update-changelog.sh "$STABLE_TAG" "$PREV_STABLE_TAG" "origin/dev"
 
       - name: Commit and Push Release to main
         if: steps.check_release.outputs.should_promote == 'true'

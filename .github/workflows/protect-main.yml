@@ -4,9 +4,11 @@ on:
   pull_request:
     branches:
       - main
+    types: [ opened, edited, synchronize, reopened ]
 
 jobs:
   check-source-branch:
+    if: github.event.action != 'edited' || github.event.changes.base != null
     name: Enforce dev → main merges only
     runs-on: ubuntu-latest
 

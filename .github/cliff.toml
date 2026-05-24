@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 """
 body = """
 {% if version %}\
-## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+## [{{ version }}] - {{ timestamp | date(format="%Y-%m-%d") }}
 {% else %}\
 ## [Unreleased]
 {% endif %}\
@@ -26,12 +26,9 @@ trim = true
 footer = """
 {% for release in releases %}\
 {% if release.version %}\
-{% if release.previous.version %}\
-[{{ release.version | trim_start_matches(pat="v") }}]: \
-  https://github.com/GioBar00/swift-leetcode-diary/compare/{{ release.previous.version }}...{{ release.version }}
-{% endif %}\
+[{{ release.version }}]: https://github.com/GioBar00/swift-leetcode-diary/releases/tag/{{ release.version }}
 {% else %}\
-[unreleased]: https://github.com/GioBar00/swift-leetcode-diary/compare/{{ releases | last | map(attribute="version") | first }}...HEAD
+[unreleased]: https://github.com/GioBar00/swift-leetcode-diary/compare/{{ releases | last | get(key="version") }}...HEAD
 {% endif %}\
 {% endfor %}
 """
@@ -41,6 +38,8 @@ conventional_commits = true
 filter_unconventional = true
 split_commits = false
 commit_parsers = [
+  { message = ".*\\[skip.*", skip = true },
+
   { message = "^feat",     group = "✨ Features" },
   { message = "^fix",      group = "🐛 Bug Fixes" },
   { message = "^perf",     group = "⚡ Performance" },
@@ -54,7 +53,7 @@ commit_parsers = [
   { message = "^.*",       skip = true },  # skip non-conventional
 ]
 filter_commits = false
-tag_pattern = "v[0-9].*"
+tag_pattern = "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
 skip_tags = ""
 ignore_tags = ""
 topo_order = false

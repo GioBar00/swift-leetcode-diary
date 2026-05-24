@@ -5,9 +5,11 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ dev ]
+    types: [ opened, edited, synchronize, reopened ]
 
 jobs:
   build-and-test:
+    if: github.event.action != 'edited' || github.event.changes.base != null
     name: Build & Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
