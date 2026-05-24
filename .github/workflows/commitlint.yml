@@ -5,25 +5,32 @@ on:
     branches: [ main, dev ]
     types: [ opened, edited, synchronize, reopened ]
 
+permissions:
+  pull-requests: read
+
 jobs:
   lint-title:
     name: Lint PR Title
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-
-      - name: Install commitlint
-        run: |
-          npm install --save-dev @commitlint/config-conventional @commitlint/cli
-
       - name: Lint PR Title
-        run: |
-          echo "${{ github.event.pull_request.title }}" | npx commitlint --config .github/commitlint.config.mjs --verbose
-
+        uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            chore
+            refactor
+            test
+            perf
+            revert
+            ci
+            build
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" must start with a lowercase letter.

@@ -33,16 +33,39 @@ jobs:
           # Determine if this is a prerelease
           if [[ "$TAG" == *"-"* ]]; then
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            
+            # Generate changelog body for this tag only (since last tag) using standard history
+            git-cliff \
+              --config .github/cliff.toml \
+              --latest \
+              --strip all \
+              --output release_notes.md
           else
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            
+            # Fetch origin dev so we have the granular history
+            git fetch origin dev
+            
+            # Find the previous stable tag (ignoring prerelease tags with dashes) in the tag's history
+            PREV_STABLE_TAG=$(git describe --tags --abbrev=0 --exclude='*-*' "$TAG^" 2>/dev/null || echo "")
+            echo "Previous stable tag: $PREV_STABLE_TAG"
+            
+            if [ -z "$PREV_STABLE_TAG" ]; then
+              # If no previous stable tag, generate changelog up to dev branch
+              git-cliff \
+                --config .github/cliff.toml \
+                --strip all \
+                --output release_notes.md \
+                "origin/dev"
+            else
+              # Generate changelog for the range PREV_STABLE_TAG..origin/dev
+              git-cliff \
+                --config .github/cliff.toml \
+                --strip all \
+                --output release_notes.md \
+                "$PREV_STABLE_TAG..origin/dev"
+            fi
           fi
-
-          # Generate changelog body for this tag only (since last tag)
-          git-cliff \
-            --config .github/cliff.toml \
-            --latest \
-            --strip all \
-            --output release_notes.md
 
           echo "Generated release notes:"
           cat release_notes.md

@@ -23,9 +23,6 @@ jobs:
       - name: Check and Promote
         id: check_release
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
           # Get latest tag in history
           LATEST_TAG=$(git tag --sort=-version:refname | head -n 1)
           if [ -z "$LATEST_TAG" ]; then
@@ -54,6 +51,13 @@ jobs:
             exit 0
           fi
 
+      - name: Configure Git & Remote
+        if: steps.check_release.outputs.should_promote == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
+
       - name: Install git-cliff
         if: steps.check_release.outputs.should_promote == 'true'
         uses: taiki-e/install-action@v2
@@ -65,19 +69,25 @@ jobs:
         run: |
           STABLE_TAG="${{ steps.check_release.outputs.stable_tag }}"
           
+          # Fetch origin dev so we have the granular history
+          git fetch origin dev
+          
+          # Find the previous stable tag by picking the second-most-recent stable tag
+          # (the most recent stable is the one we're about to promote *to*, so we skip it)
+          PREV_STABLE_TAG=$(git tag --sort=-version:refname | grep -v -- '-' | sed -n '1p')
+          echo "Previous stable tag: $PREV_STABLE_TAG"
+          
           # Prepend only the new release section on top of the existing CHANGELOG.md
           git-cliff \
             --config .github/cliff.toml \
             --tag "$STABLE_TAG" \
-            --prepend CHANGELOG.md
+            --prepend CHANGELOG.md \
+            "$PREV_STABLE_TAG..origin/dev"
 
       - name: Commit and Push Release to main
         if: steps.check_release.outputs.should_promote == 'true'
         run: |
           STABLE_TAG="${{ steps.check_release.outputs.stable_tag }}"
-          
-          # Set remote URL to explicitly use the PAT token
-          git remote set-url origin "https://x-access-token:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
           
           git add CHANGELOG.md
           git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for $STABLE_TAG [skip ci]"
@@ -88,21 +98,18 @@ jobs:
           git push origin "$STABLE_TAG"
           echo "✅ Tagged and pushed stable release: $STABLE_TAG"
 
-      - name: Automatic Fast-Forward Back-Merge to dev
+      - name: Automatic Back-Merge to dev
         if: steps.check_release.outputs.should_promote == 'true'
         run: |
           echo "🔄 Running automatic back-merge from main to dev..."
-          
-          # Set remote URL to explicitly use the PAT token
-          git remote set-url origin "https://x-access-token:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
           
           # Fetch all branches
           git fetch origin dev
           git checkout dev
           
-          # Perform fast-forward merge from main
-          git merge origin/main --ff-only
+          # Perform standard merge from main (creates a merge commit to establish a clean base)
+          git merge origin/main -m "chore: sync stable release back to dev [skip ci]"
           
           # Push back to dev
           git push origin dev
-          echo "✅ Dev branch successfully fast-forward merged and synced with main."
+          echo "✅ Dev branch successfully merged and synced with main."

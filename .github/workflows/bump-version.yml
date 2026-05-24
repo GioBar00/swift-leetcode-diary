@@ -57,13 +57,17 @@ jobs:
           BUMP_TYPE="${{ github.event.inputs.bump_type }}"
           PRERELEASE_LABEL="${{ github.event.inputs.prerelease_label }}"
 
-          chmod +x .github/scripts/bump-version.sh
           NEXT=$(.github/scripts/bump-version.sh "$BUMP_TYPE" "$PRERELEASE_LABEL")
 
           echo "Computed next prerelease version: $NEXT"
           echo "next_tag=$NEXT" >> $GITHUB_OUTPUT
 
-      - name: Create and push tag
+      - name: Install git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
+
+      - name: Update CHANGELOG.md & Push Tag
         run: |
           TAG="${{ steps.version.outputs.next_tag }}"
           
@@ -73,6 +77,16 @@ jobs:
           # Set remote URL to explicitly use the PAT token
           git remote set-url origin "https://x-access-token:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
           
+          # Generate and prepend the changelog using git-cliff
+          git-cliff --config .github/cliff.toml --tag "$TAG" --prepend CHANGELOG.md
+          
+          # Commit the updated CHANGELOG.md to dev
+          git add CHANGELOG.md
+          git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for $TAG [skip ci]"
+          git push origin dev
+          
+          # Tag the new commit on dev
           git tag "$TAG" -m "chore: prerelease $TAG"
           git push origin "$TAG"
           echo "✅ Prerelease tag created and pushed: $TAG"
+
