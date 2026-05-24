@@ -80,6 +80,7 @@ jobs:
           # Prepend only the new release section on top of the existing CHANGELOG.md
           git-cliff \
             --config .github/cliff.toml \
+            --unreleased \
             --tag "$STABLE_TAG" \
             --prepend CHANGELOG.md \
             "$PREV_STABLE_TAG..origin/dev"
