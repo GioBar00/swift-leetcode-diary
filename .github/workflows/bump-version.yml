@@ -3,29 +3,26 @@ name: Bump Version
 on:
   workflow_dispatch:
     inputs:
-      action:
-        description: 'Prerelease action'
+      bump_type:
+        description: 'What type of bump to perform (use major, minor, patch to start a new cycle; use same or label to promote/increment)'
         required: true
         type: choice
+        default: same
         options:
-          - new_prerelease
-          - increment_number
-          - promote_label
-      base_bump:
-        description: 'Base bump scope (only used for new_prerelease)'
-        required: false
-        type: choice
-        default: minor
-        options:
-          - patch
-          - minor
+          - same
           - major
+          - minor
+          - patch
+          - alpha
+          - beta
+          - rc
       prerelease_label:
-        description: 'Target label (used for new_prerelease and promote_label)'
+        description: 'Target label (only evaluated when starting a new cycle. If none, inherits active prerelease label or defaults to alpha if starting from stable)'
         required: false
         type: choice
-        default: beta
+        default: none
         options:
+          - none
           - alpha
           - beta
           - rc
@@ -57,102 +54,43 @@ jobs:
       - name: Compute next version
         id: version
         run: |
-          # 1. Fetch latest tag
-          LATEST_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
-          if [ -z "$LATEST_TAG" ]; then
-            LATEST_TAG="v0.0.0"
-          fi
-          echo "Latest tag found: $LATEST_TAG"
+          BUMP_TYPE="${{ github.event.inputs.bump_type }}"
+          PRERELEASE_LABEL="${{ github.event.inputs.prerelease_label }}"
 
-          VERSION="${LATEST_TAG#v}"
-          BASE_VERSION="${VERSION%%-*}"
-
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VERSION"
-
-          ACTION="${{ github.event.inputs.action }}"
-          BASE_BUMP="${{ github.event.inputs.base_bump }}"
-          TARGET_LABEL="${{ github.event.inputs.prerelease_label }}"
-
-          # Helper to map labels to numeric value for hierarchy checks
-          function label_value() {
-            case "$1" in
-              alpha) echo 1 ;;
-              beta)  echo 2 ;;
-              rc)    echo 3 ;;
-              *)     echo 0 ;;
-            esac
-          }
-
-          if [ "$ACTION" = "new_prerelease" ]; then
-            # We are starting a brand new prerelease series
-            case "$BASE_BUMP" in
-              major)
-                MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
-                ;;
-              minor)
-                MINOR=$((MINOR + 1)); PATCH=0
-                ;;
-              patch)
-                PATCH=$((PATCH + 1))
-                ;;
-            esac
-            NEXT="v${MAJOR}.${MINOR}.${PATCH}-${TARGET_LABEL}.1"
-
-          elif [ "$ACTION" = "increment_number" ]; then
-            # We want to increment the number of an existing prerelease
-            if [[ "$VERSION" != *"-"* ]]; then
-              echo "❌ Error: The latest version $LATEST_TAG is a stable release. You cannot use 'increment_number' if there is no active prerelease."
-              exit 1
-            fi
-            
-            # Extract current label and number
-            # e.g., 1.1.0-beta.2 -> beta.2 -> label=beta, num=2
-            SUFFIX="${VERSION#*-}"
-            CURRENT_LABEL="${SUFFIX%%.*}"
-            CURRENT_NUM="${SUFFIX#*.}"
-            
-            NEXT_NUM=$((CURRENT_NUM + 1))
-            NEXT="v${BASE_VERSION}-${CURRENT_LABEL}.${NEXT_NUM}"
-
-          elif [ "$ACTION" = "promote_label" ]; then
-            # We want to promote the label (e.g. alpha -> beta -> rc)
-            if [[ "$VERSION" != *"-"* ]]; then
-              echo "❌ Error: The latest version $LATEST_TAG is a stable release. You cannot promote a stable release."
-              exit 1
-            fi
-
-            SUFFIX="${VERSION#*-}"
-            CURRENT_LABEL="${SUFFIX%%.*}"
-
-            VAL_CURRENT=$(label_value "$CURRENT_LABEL")
-            VAL_TARGET=$(label_value "$TARGET_LABEL")
-
-            echo "Current label: $CURRENT_LABEL (value: $VAL_CURRENT)"
-            echo "Target label: $TARGET_LABEL (value: $VAL_TARGET)"
-
-            if [ "$CURRENT_LABEL" = "rc" ]; then
-              echo "❌ Error: The current label is already at the maximum level ('rc'). You cannot promote it further. Merge dev into main to release stable."
-              exit 1
-            fi
-
-            if [ "$VAL_TARGET" -le "$VAL_CURRENT" ]; then
-              echo "❌ Error: Target label '$TARGET_LABEL' must be higher than current label '$CURRENT_LABEL' in the hierarchy (alpha < beta < rc)."
-              exit 1
-            fi
-
-            NEXT="v${BASE_VERSION}-${TARGET_LABEL}.1"
-          fi
+          NEXT=$(.github/scripts/bump-version.sh "$BUMP_TYPE" "$PRERELEASE_LABEL")
 
           echo "Computed next prerelease version: $NEXT"
           echo "next_tag=$NEXT" >> $GITHUB_OUTPUT
 
-      - name: Create and push tag
+      - name: Install git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
+
+      - name: Update CHANGELOG.md & Push Tag
         run: |
           TAG="${{ steps.version.outputs.next_tag }}"
           
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
+          # Set remote URL to explicitly use the PAT token
+          git remote set-url origin "https://x-access-token:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
+          
+          # Find the previous stable tag (used as the base for the new changelog section)
+          PREV_STABLE_TAG=$(git tag --sort=-version:refname | grep -v -- '-' | head -n 1)
+          
+          # Replace the unreleased section idempotently using the script
+          STABLE_TAG="${TAG%%-*}"
+          .github/scripts/update-changelog.sh "$STABLE_TAG" "$PREV_STABLE_TAG"
+          
+          # Commit the updated CHANGELOG.md to dev
+          git add CHANGELOG.md
+          git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for $TAG [skip]"
+          git push origin dev
+          
+          # Tag the new commit on dev
           git tag "$TAG" -m "chore: prerelease $TAG"
           git push origin "$TAG"
           echo "✅ Prerelease tag created and pushed: $TAG"
+

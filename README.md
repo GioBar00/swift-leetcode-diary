@@ -63,7 +63,7 @@ leetswift list
 Run one with: leetswift run <slug-or-path>
 Test one with: leetswift test <slug-or-path>
 Benchmark one with: leetswift benchmark <slug-or-path>
-Create a new one with: swift create.swift <slug>
+Create a new one with: leetswift create <slug>
 ```
 
 ### 2. Run a Solution
@@ -149,20 +149,26 @@ leetswift benchmark Sources/leetcodes/two-sum --iterations 5 --warmup 1
 
 ## 📝 Logging a New LeetCode Challenge
 
-To log a new challenge, run the included `create.swift` automation script:
+To log a new challenge, use the `leetswift create` command:
 ```bash
-swift create.swift <leetcode-slug>
+leetswift create <leetcode-slug>
 ```
 *Example:*
 ```bash
-swift create.swift reverse-integer
+leetswift create reverse-integer
 ```
 
 This will automatically:
-1. Create `Sources/leetcodes/reverse-integer/` and populate it with stubs for your solutions, a README, and a custom benchmark.
-2. Create `Tests/leetcodesTests/reverse-integer/` populated with stubs for unit tests (`Swift Testing` suite) and raw input files.
-3. Automatically append the problem metadata and register `ReverseInteger` in `Sources/leetcodes/Shared/ChallengeRegistry.swift`.
-4. Work instantly with zero manual wiring!
+1. Fetch the problem title, description, difficulty, and Swift starter code from LeetCode (or scaffold offline with `--local`).
+2. Create `Sources/leetcodes/reverse-integer/` and populate it with stubs for your solutions, a README, and a custom benchmark.
+3. Create `Tests/leetcodesTests/reverse-integer/` populated with stubs for unit tests (`Swift Testing` suite) and a pre-filled `testcases.json`.
+4. Automatically append the problem metadata and register `ReverseInteger` in `Sources/leetcodes/Shared/ChallengeRegistry.swift`.
+5. Work instantly with zero manual wiring!
+
+**Options:**
+- `--local` / `--offline`: Scaffold without an internet connection.
+- `--force`: Delete and fully recreate an existing challenge directory (preserves nothing — use carefully).
+- Running without `--force` on an existing slug performs a **selective refresh**: only `README.md` is overwritten, preserving your solutions.
 
 ---
 
@@ -171,13 +177,16 @@ This will automatically:
 ```text
 swift-leetcode-diary/
 ├── Package.swift                  # SPM build definition (with dynamic file exclusions)
-├── create.swift                   # Automation template generator & auto-registry script
 ├── leetswift                      # Root executable shell script wrapper
 ├── Makefile                       # Makefile for global leetswift CLI installation
 ├── CHANGELOG.md                   # Release history
 ├── CONTRIBUTING.md                # Contribution guide & commit convention
 ├── CLI/                           # CLI Executable Source (Main entry point)
-│   ├── main.swift                 # CLI Parser Root
+│   ├── main.swift                 # CLI Parser Root (AsyncParsableCommand)
+│   ├── CreateCommand.swift        # Command to scaffold new challenges
+│   ├── LeetCodeFetcher.swift      # GraphQL fetcher, HTML→MD, type mapping
+│   ├── TemplateGenerator.swift    # Template engine + file I/O
+│   ├── ChallengeRegistrar.swift   # Auto-registers challenges in the registry
 │   ├── ListCommand.swift          # Command to list logged challenges
 │   ├── RunCommand.swift           # Command to execute solutions with input
 │   ├── TestCommand.swift          # Subprocess test runner with log streaming

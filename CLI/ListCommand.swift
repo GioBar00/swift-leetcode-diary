@@ -28,6 +28,6 @@ struct ListCommand: ParsableCommand {
         print("Run one with: leetswift run <slug-or-path>")
         print("Test one with: leetswift test <slug-or-path>")
         print("Benchmark one with: leetswift benchmark <slug-or-path>")
-        print("Create a new one with: swift create.swift <slug>")
+        print("Create a new one with: leetswift create <slug>")
     }
 }

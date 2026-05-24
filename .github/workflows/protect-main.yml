@@ -1,0 +1,27 @@
+name: Protect Main Branch
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [ opened, edited, synchronize, reopened ]
+
+jobs:
+  check-source-branch:
+    if: github.event.action != 'edited' || github.event.changes.base != null
+    name: Enforce dev → main merges only
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check source branch
+        run: |
+          SOURCE_BRANCH="${{ github.head_ref }}"
+          echo "PR source branch: $SOURCE_BRANCH"
+
+          if [ "$SOURCE_BRANCH" != "dev" ]; then
+            echo "❌ Pull requests to main are only allowed from the 'dev' branch."
+            echo "   This PR originates from '$SOURCE_BRANCH'."
+            exit 1
+          fi
+
+          echo "✅ Source branch is 'dev'. Merge is allowed."

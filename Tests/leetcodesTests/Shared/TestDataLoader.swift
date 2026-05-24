@@ -11,4 +11,17 @@ public enum TestDataLoader {
         let fileURL = directoryURL.appendingPathComponent(fileName)
         return try? String(contentsOf: fileURL, encoding: .utf8)
     }
+    
+    /// Dynamically loads and decodes JSON content from a file located in the same directory as the calling Swift file.
+    public static func loadJSON<T: Decodable>(_ type: T.Type, fileName: String, callingFile: String = #filePath) -> T? {
+        guard let data = loadString(fileName: fileName, callingFile: callingFile)?.data(using: .utf8) else {
+            return nil
+        }
+        do {
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            print("❌ TestDataLoader failed to decode JSON file '\(fileName)': \(error)")
+            return nil
+        }
+    }
 }
